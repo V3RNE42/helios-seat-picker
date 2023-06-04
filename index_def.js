@@ -261,6 +261,7 @@ function renderResults() {
             leftSeat = getLeftSeat(el["AM"], el.NaS);
             texto += `Siéntate en el lado ${leftSeat ? "<b>izquierdo</b>" : "<b>derecho</b>"} del vehículo durante todo el trayecto `;
         };
+        texto += '<br>'
         if (!el.night) texto += `${sun ? '<span>☀️</span>' : '<span>⛅</span>'}`;
 
         let div = document.createElement("div");
@@ -744,6 +745,8 @@ async function printAsPDF() {
     let header = getID('header');
     header.style.position = 'absolute';
     getID('HELIOS').style.display = 'none';
+    getID('footer').style.display = 'none';
+    getID('resetea').style.display = 'none';
     printJS({
         printable: 'container',
         type: 'html',
@@ -760,4 +763,6 @@ async function printAsPDF() {
     });
     header.style.position = 'fixed';
     getID('HELIOS').style.display = 'block';
+    getID('footer').style.display = 'block';
+    getID('resetea').style.display = 'block';
 }
