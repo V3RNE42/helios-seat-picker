@@ -132,7 +132,7 @@ async function getOffset(coords) {
     let huso = 0;
 
     try {
-        const response = await fetch(`${proxyEndpoint}/timezone?lat=${lat}&lon=${lon}`);
+        const response = await fetch(`${proxyEndpoint}/api/timezone?lat=${lat}&lon=${lon}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -148,7 +148,7 @@ async function getOffset(coords) {
         console.log(error);
 
         try {
-            const response = await fetch(`${proxyEndpoint}/backup-timezone?lat=${lat}&lon=${lon}`);
+            const response = await fetch(`${proxyEndpoint}/api/backup-timezone?lat=${lat}&lon=${lon}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -554,7 +554,7 @@ async function getCoords(city, country) {
     const proxyEndpoint = window.location.origin;    
 
     try {
-        const response = await fetch(`${proxyEndpoint}/coords?city=${city}&country=${country}`);
+        const response = await fetch(`${proxyEndpoint}/api/coords?city=${city}&country=${country}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -571,7 +571,7 @@ async function getCoords(city, country) {
 
         try {
             const apiKey = 'b40897201f924666a9e86f365d5efb13';
-            const response = await fetch(`${proxyEndpoint}/backup-coords?city=${city}&country=${country}&apiKey=${apiKey}`);
+            const response = await fetch(`${proxyEndpoint}/api/backup-coords?city=${city}&country=${country}&apiKey=${apiKey}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
