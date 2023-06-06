@@ -5,10 +5,10 @@ module.exports = (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    const { city, country } = req.query;
-    const nominatimEndpoint = `https://nominatim.openstreetmap.org/search.php?city=${city}&country=${country}&format=jsonv2`;
+    const { city, country, apiKey } = req.query;
+    const opencageEndpoint = `https://api.opencagedata.com/geocode/v1/json?q=${city},${country}&key=${apiKey}`;
 
-    https.get(nominatimEndpoint, (apiRes) => {
+    https.get(opencageEndpoint, (apiRes) => {
         let data = '';
 
         apiRes.on('data', (chunk) => {

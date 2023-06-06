@@ -3,7 +3,11 @@ import sunCalc from "./SunCalc_function.js";
 //importo algunas funciones trigonometricas y matematicas que he creado aparte
 import { getNewCoords, getAbsoluteDiff, getAngularDistance } from "./trigo.js";
 import { Spinner } from "./spinner.js";
-import countries from "./countries.js";
+import city_data from "./city_data.js";
+//Cojo los países y los pongo en una variable
+let paises = [];
+for (let key in city_data.countries) paises.push(key);
+const countries = paises;
 //con la funcion getTimes sacamos el MediodiaSolar
 let { getTimes } = SunCalc;
 //con la funcion getDayInfo sacamos el amanaecer y el anochecer (entre otros datos)
@@ -12,13 +16,13 @@ let { getDayInfo } = sunCalc();
 
 /** Ajuste de las horas en las fechas por defecto: 
 suelen empezar a las 10:42 por algun motivo*/
-let DATE_ADJUSTMENT = (34 * 60 + 42) * 60000;
+const DATE_ADJUSTMENT = (34 * 60 + 42) * 60000;
 /** 24 horas en milisegundos */
-let ONE_DAY = 24 * 60 * 60 * 1000;
+const ONE_DAY = 24 * 60 * 60 * 1000;
 /** 1 hora en milisegundos */
-let ONE_HOUR = 60 * 60 * 1000;
+const ONE_HOUR = 60 * 60 * 1000;
 /**Puramente ornamental */
-let Solete = new Spinner();
+const Solete = new Spinner();
 /** Info relativa a coordenadas y posiciones solares |
  * start - inicio espacio/tiempo del viaje |
  * end   - final espacio/tiempo  del viaje |
@@ -33,6 +37,8 @@ const ID = [...form, "formulario", "submit", "reset", "resetea", "result", "rend
 let subSection = [{}];
 /** Array de información principal con la que trabajar */
 let datos = [{}];
+datos['valid_start'] = false;
+datos['valid_end'] = false;
 
 window.addEventListener('DOMContentLoaded', () => {
     reloadId(ID);
@@ -47,11 +53,10 @@ window.addEventListener('DOMContentLoaded', () => {
             datos.push({ ...form.forEach((el) => datos[el] = valor(el)) });
             await updateSubsections();
             renderResults();
-            Solete.stop();
         } else {
-            Solete.stop();
             formulario.style.display = "block";
         };
+        Solete.stop();
     });
     onClick(reset, () => {
         window.location.reload();
@@ -127,7 +132,7 @@ async function updateSubsections() {
 
 /** Devuelve el huso horario de las coordenadas dadas */
 async function getOffset(coords) {
-    const proxyEndpoint = window.location.origin; 
+    const proxyEndpoint = window.location.origin;
     const { lat, lon } = coords;
     let huso = 0;
 
@@ -174,6 +179,7 @@ function renderResults() {
     let leftSeat;
     formulario.style.display = "none";
     let someInfo = document.createElement('div');
+    someInfo.setAttribute('id', 'someInfo');
     let destino = datos["destino"], origen = datos["origen"],
         paisOrigen = datos["paisOrigen"], paisDestino = datos["paisDestino"];
     [destino, origen, paisOrigen, paisDestino].forEach((e) => { e = e.replaceAll("%20", " ") });
@@ -200,7 +206,7 @@ function renderResults() {
 
     secciones.forEach((el, i) => {
         let hours2, minutes2, noonHour, noonMin, hours1, minutes1, day, month, year;
-        
+
         if (local) {    /* Ajuste a los husos horarios locales */
             let originalOffset = secciones[0].sunriseOffset;
             el.sunset = (el.sunset != null && el.sunsetOffset != originalOffset) ? new Date(el.sunset.getTime() + (el.sunsetOffset.valueOf() - originalOffset) * ONE_HOUR) : el.sunset;
@@ -530,8 +536,9 @@ function isThereDaylightNow(here, now) {
 /** Consigue las coordenadas de las ciudades y las devuelve en forma de objeto
  * @returns {Object} Objeto con las coordenadas recién obtenidas  */
 async function updateCoords() {
-    let coordenadas1 = await getCoords(datos.origen, datos.paisOrigen);
-    let coordenadas2 = await getCoords(datos.destino, datos.paisDestino);
+    let coordenadas1, coordenadas2;
+    coordenadas1 = datos.prov_start;
+    coordenadas2 = datos.prov_end;
     let coord = {
         latOrig: coordenadas1.lat,
         lonOrig: coordenadas1.lon,
@@ -552,41 +559,23 @@ async function updateCoords() {
  * @param {String} city @param {String} country /país 
  * @return {JSON} JSON con los datos Lon(gitud) y Lat(itud)*/
 async function getCoords(city, country) {
-    const proxyEndpoint = window.location.origin;    
-
+    const proxyEndpoint = window.location.origin;
     try {
-        const response = await fetch(`${proxyEndpoint}/api/coords?city=${city}&country=${country}`);
+        const apiKey = 'b40897201f924666a9e86f365d5efb13';
+        const response = await fetch(`${proxyEndpoint}/api/coords?city=${city}&country=${country}&apiKey=${apiKey}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await response.json();
+        const backupData = await response.json();
 
-        if (data.length > 0) {
-            const { lon, lat } = data[0];
-            return { lon: parseFloat(lon), lat: parseFloat(lat) };
+        if (backupData.results.length > 0) {
+            const { lng, lat } = backupData.results[0].geometry;
+            return { lon: parseFloat(lng), lat: parseFloat(lat) };
         } else {
-            throw new Error('No se pudo obtener datos de nominatim');
+            throw new Error('No se pudo obtener datos de OpenCage Data API');
         }
-    } catch (error) {
-        console.log(error);
-
-        try {
-            const apiKey = 'b40897201f924666a9e86f365d5efb13';
-            const response = await fetch(`${proxyEndpoint}/api/backup-coords?city=${city}&country=${country}&apiKey=${apiKey}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const backupData = await response.json();
-
-            if (backupData.results.length > 0) {
-                const { lng, lat } = backupData.results[0].geometry;
-                return { lon: parseFloat(lng), lat: parseFloat(lat) };
-            } else {
-                throw new Error('No se pudo obtener datos de OpenCage Data API');
-            }
-        } catch (backupError) {
-            console.log(backupError);
-        }
+    } catch (backupError) {
+        console.log(backupError);
     }
 }
 /** Retorna el valor "cocinado" de un elemento del DOM, listo para ser usado
@@ -613,7 +602,8 @@ function valor(id) {
         case "destino":
         case "paisOrigen":
         case "paisDestino":
-            valor = getVal(id).trim().replaceAll(" ", "%20").replaceAll("á", "a").replaceAll("é", "e").replaceAll("í", "i").replaceAll("ó", "o").replaceAll("ú", "u").replaceAll("ñ", "n").replaceAll("ü", "u").replaceAll("ç", "c").replaceAll("à", "a").replaceAll("è", "e").replaceAll("ì", "i").replaceAll("ò", "o").replaceAll("ù", "u").toLowerCase();
+            valor = getVal(id).trim().replaceAll(" ", "%20").replaceAll("_","%20").toLowerCase();
+            valor = quitaTildes(valor);
             break;
         default:
             valor = getVal(id);
@@ -668,6 +658,22 @@ function getID(id) {
  * @returns {*} Valor del elemento */
 let getVal = (id) => typeof id == "string" ? getID(id)?.value : id?.value;
 
+/** Comprueba si una ciudad pertenece a un país
+ *  @param {String} city 
+ *  @param {String} country 
+ *  @returns {Boolean}   */
+function checkCorrespondence(city, country) {
+    let citiesInCountry = city_data.countries[country];
+    if (citiesInCountry == undefined) return false;
+    city = quitaTildes(city).toLowerCase().trim();
+    citiesInCountry = citiesInCountry.map((c)=>quitaTildes(c).toLowerCase())
+    console.log(`La ciudad ${city} ${citiesInCountry.includes(city) ? "sí" : "no"} está en el país ${country}`);
+    return citiesInCountry.includes(city);
+}
+/**Quita las tildes y las cedillas */
+function quitaTildes(string) {
+    return string.replaceAll("á", "a").replaceAll("é", "e").replaceAll("í", "i").replaceAll("ó", "o").replaceAll("ú", "u").replaceAll("ñ", "n").replaceAll("ü", "u").replaceAll("ç", "c").replaceAll("à", "a").replaceAll("è", "e").replaceAll("ì", "i").replaceAll("ò", "o").replaceAll("ù", "u");
+}
 /** Comprueba que todos los campos del formulario están correctamente
  *  rellenos, y si no lo están, muestra un mensaje de error 
  *  @returns {Boolean} True si NO hay ningún error en el formulario*/
@@ -689,7 +695,7 @@ async function checkForm() {
         msg += "El campo de minutos no es correcto \n";
         NoErr = false;
     }
-    if (getVal("horallegada") > 23 || getVal("horasalida") > 23 || getVal("horasalida") < 0 || getVal("horallegada") < 0 ) {
+    if (getVal("horallegada") > 23 || getVal("horasalida") > 23 || getVal("horasalida") < 0 || getVal("horallegada") < 0) {
         msg += "El campo de horas no es correcto \n";
         NoErr = false;
     }
@@ -701,22 +707,47 @@ async function checkForm() {
         msg += "La fecha de salida no puede ser anterior al día de hoy \n";
         NoErr = false;
     }
+
+    datos['valid_start'] = checkCorrespondence(getVal("origen"), getVal("paisOrigen"));
+    datos['valid_end'] = checkCorrespondence(getVal("destino"), getVal("paisDestino"));
+
+    if (datos.valid_start !== true) {
+        let confirm_start = window.confirm(`La ciudad de origen no se encuentra en el país indicado. ¿Desea continuar? \n Los resultados serán menos fiables`);
+        if (!confirm_start) {
+            NoErr = false;
+            return;
+        }
+    }
+    if (datos.valid_end !== true) {
+        let confirm_end = window.confirm(`La ciudad de destino no se encuentra en el país indicado. ¿Desea continuar? \n Los resultados serán menos fiables`);
+        if (!confirm_end) {
+            NoErr = false;
+            return;
+        }
+    }
+
     if (NoErr) {
-        let coordOrigen = await getCoords(valor("origen"),valor("paisOrigen"));
-        let coordDestino = await getCoords(valor("destino"),valor("paisDestino"));
+        datos['prov_end'] = await getCoords(valor("destino"), valor("paisDestino"));;
+        datos['prov_start'] = await getCoords(valor("origen"), valor("paisOrigen"));
+    }
+
+    if (NoErr) {
         let diaLlegada = valor("diallegada");
         let diaSalida = valor("diasalida");
-        let speed = getAngularDistance(coordOrigen, coordDestino) / ((diaLlegada - diaSalida) / (1000 * 60 * 60));
+        let speed = getAngularDistance(datos['prov_start'], datos['prov_end']) / ((diaLlegada - diaSalida) / (1000 * 60 * 60));
         if (speed > 830) {
-            if (!(window.confirm(
+            let valido_provisional = window.confirm(
                 "La velocidad del vehículo es muy alta. ¿Es esto un error? \n" +
                 "Si es así, pulsa 'Cancelar' y corrige los datos. \n" +
-                "Si no, pulsa 'Aceptar' para continuar. \n"))) {
-                    NoErr = false;
+                "Si no, pulsa 'Aceptar' para continuar. \n");
+            if (!valido_provisional) {
+                NoErr = false;
+                datos['valid_start'] = false;
+                datos['valid_end'] = false;
             }
         }
     }
-    if (!NoErr) {window.alert(msg);}
+    if (!NoErr) { window.alert(msg); }
     return NoErr;
 }
 /** Comprueba que la hora de salida no sea posterior a la de llegada, 
@@ -740,7 +771,7 @@ function updateArrivalTime() {
 async function printAsPDF() {
     let fecha = new Date().getHours();
     fecha = JSON.stringify(fecha).substring(0, 10).replaceAll(/ /g, '_');
-    let filename = `HELIOS-asientos__${fecha}_origen#${datos['origen']}_${datos['paisOrigen']}_destino#${datos['destino']}_${datos['paisDestino']}`;
+    let filename = `HELIOS_${fecha}_origen#${valor(datos['origen'])}_${valor(datos['paisOrigen'])}_destino#${valor(datos['destino'])}_${valor(datos['paisDestino'])}`;
     filename += '.pdf';
     let header = getID('header');
     header.style.position = 'absolute';
@@ -754,10 +785,10 @@ async function printAsPDF() {
             "./styles.css",
             "./secundario.css"
         ],
-        scanStyles: false,
-        header: null, 
-        targetStyles: ['*'], 
-        onLoadingEnd: null, 
+        scanStyles: true,
+        header: null,
+        targetStyles: ['*'],
+        onLoadingEnd: null,
         orientation: 'portrait',
         fileName: filename,
     });

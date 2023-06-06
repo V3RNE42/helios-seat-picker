@@ -39,6 +39,7 @@ small {
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -83,7 +84,7 @@ small {
     color: #fff;
 }
 
-.invert-colors button#reset:hover, 
+.invert-colors button#reset:hover,
 .invert-colors button#submit:hover {
     background-color: #fff;
     color: #000;
@@ -92,13 +93,15 @@ small {
 #color-toggle {
     background-color: transparent;
 }
-button#reset:hover, 
+
+button#reset:hover,
 button#submit:hover {
     background-color: black;
     color: lightgoldenrodyellow;
 }
 
-footer, footer > a {
+footer,
+footer>a {
     bottom: 0;
     left: 0;
     right: 0;
@@ -114,4 +117,20 @@ footer, footer > a {
     margin-top: 5.25%;
     padding: 2rem;
     display: none;
+}
+
+@media print {
+    @page {
+        margin: 0.5cm;
+    }
+
+    footer,
+    .color-toggle-container,
+    #HELIOS {
+        display: none;
+    }
+
+    #someInfo {
+        color: #000;
+    }
 }
