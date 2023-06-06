@@ -3,7 +3,7 @@ import sunCalc from "./SunCalc_function.js";
 //importo algunas funciones trigonometricas y matematicas que he creado aparte
 import { getNewCoords, getAbsoluteDiff, getAngularDistance } from "./trigo.js";
 import { Spinner } from "./spinner.js";
-import {city_data} from "./city_data.js";
+import city_data from "./city_data.js";
 //con la funcion getTimes sacamos el MediodiaSolar
 let { getTimes } = SunCalc;
 //con la funcion getDayInfo sacamos el amanaecer y el anochecer (entre otros datos)
