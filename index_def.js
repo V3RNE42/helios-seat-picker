@@ -18,7 +18,7 @@ const ONE_DAY = 24 * 60 * 60 * 1000;
 /** 1 hora en milisegundos */
 const ONE_HOUR = 60 * 60 * 1000;
 /**Puramente ornamental */
-const Solete = new Spinner();
+let Solete = new Spinner();
 /** Info relativa a coordenadas y posiciones solares |
  * start - inicio espacio/tiempo del viaje |
  * end   - final espacio/tiempo  del viaje |
