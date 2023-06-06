@@ -3,11 +3,7 @@ import sunCalc from "./SunCalc_function.js";
 //importo algunas funciones trigonometricas y matematicas que he creado aparte
 import { getNewCoords, getAbsoluteDiff, getAngularDistance } from "./trigo.js";
 import { Spinner } from "./spinner.js";
-import city_data from "./city_data.js";
-//Cojo los países y los pongo en una variable
-let paises = [];
-for (let key in city_data.countries) paises.push(key);
-const countries = paises;
+import {city_data} from "./city_data.js";
 //con la funcion getTimes sacamos el MediodiaSolar
 let { getTimes } = SunCalc;
 //con la funcion getDayInfo sacamos el amanaecer y el anochecer (entre otros datos)
@@ -42,6 +38,9 @@ datos['valid_end'] = false;
 
 window.addEventListener('DOMContentLoaded', () => {
     reloadId(ID);
+    let paises = [];
+    for (let key in city_data.countries) paises.push(key);
+    const countries = paises;
     countries.forEach((el) => {
         paisOrigen.innerHTML += `<option value="${el}" ${el == 'Spain' ? 'selected' : ''}>${el}</option>`;
         paisDestino.innerHTML += `<option value="${el}" ${el == 'Spain' ? 'selected' : ''}>${el}</option>`;
