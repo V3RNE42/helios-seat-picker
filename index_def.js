@@ -560,7 +560,7 @@ async function updateCoords() {
 async function getCoords(city, country) {
     const proxyEndpoint = window.location.origin;
     try {
-        const apiKey = 'b40897201f924666a9e86f365d5efb13';
+        const apiKey = '46612f62f2db46ac939d531e37c01c94';
         const response = await fetch(`${proxyEndpoint}/api/coords?city=${city}&country=${country}&apiKey=${apiKey}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
